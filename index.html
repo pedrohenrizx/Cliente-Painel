@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CustomerFlow Analytics — Painel Gratuito de Gestão de Clientes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script type="text/javascript" src="https://unpkg.com/parse/dist/parse.min.js"></script>
+    <style>
+        /* Custom tweaks */
+        .hero-illustration {
+            filter: drop-shadow(0 10px 30px rgba(2,6,23,0.18));
+        }
+        .glass {
+            backdrop-filter: blur(8px);
+            background: rgba(255,255,255,0.06);
+        }
+        [data-theme="dark"] .glass {
+            background: rgba(10,10,10,0.36);
+        }
+        .card-anim { transition: transform .25s ease, box-shadow .25s ease; }
+        .card-anim:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 20px 40px rgba(2,6,23,0.16); }
+        .nav-item { transition: color .18s, transform .18s; }
+        .nav-item:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-base-100 to-base-200 min-h-screen">
+    <!-- NAVBAR -->
+    <header class="w-full sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="#" class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white shadow-lg">
+                        <i class="fa-solid fa-water fa-lg"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <h1 class="text-xl font-bold text-primary">CustomerFlow</h1>
+                        <p class="text-xs text-muted">Analytics — Gratuito</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="flex-1 mx-4">
+                <ul class="menu menu-horizontal px-1 hidden md:flex justify-center gap-2">
+                    <li><a href="#" class="nav-item text-base" data-page="home"><i class="fa-solid fa-house mr-2"></i>Início</a></li>
+                    <li><a href="#" class="nav-item text-base" data-page="dashboard"><i class="fa-solid fa-chart-line mr-2"></i>Painel</a></li>
+                    <li><a href="#" class="nav-item text-base" data-page="segmentation"><i class="fa-solid fa-filter mr-2"></i>Segmentação</a></li>
+                    <li><a href="#" class="nav-item text-base" data-page="reports"><i class="fa-solid fa-file-lines mr-2"></i>Relatórios</a></li>
+                    <li><a href="#" class="nav-item text-base" data-page="settings"><i class="fa-solid fa-gear mr-2"></i>Configurações</a></li>
+                    <li><a href="#" class="nav-item text-base" data-page="help"><i class="fa-solid fa-circle-question mr-2"></i>Ajuda</a></li>
+                </ul>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="theme-toggle" class="btn btn-ghost btn-sm tooltip tooltip-bottom" data-tip="Tema">
+                    <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+                <div id="user-area" class="flex items-center gap-2">
+                    <button id="btn-login" class="btn btn-primary btn-sm"><i class="fa-brands fa-google mr-2"></i>Entrar</button>
+                </div>
+                <label class="btn btn-square btn-ghost md:hidden" id="menu-toggle">
+                    <i class="fa-solid fa-bars"></i>
+                </label>
+            </div>
+        </nav>
+
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-gradient-to-r from-accent to-primary">
+            <ul class="menu p-4 text-white">
+                <li><a href="#" class="nav-item" data-page="home">Início</a></li>
+                <li><a href="#" class="nav-item" data-page="dashboard">Painel</a></li>
+                <li><a href="#" class="nav-item" data-page="segmentation">Segmentação</a></li>
+                <li><a href="#" class="nav-item" data-page="reports">Relatórios</a></li>
+                <li><a href="#" class="nav-item" data-page="settings">Configurações</a></li>
+                <li><a href="#" class="nav-item" data-page="help">Ajuda</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="container mx-auto px-4 py-8">
+        <div id="app-content" class="space-y-8">
+            <!-- Default content (hero + features + pricing) will be injected by JS on load -->
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer p-10 bg-base-100 rounded-t-lg mt-12">
+        <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white">
+                        <i class="fa-solid fa-water"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg">CustomerFlow Analytics</h3>
+                        <p class="text-sm text-muted">Painel gratuito para transformar dados em decisões.</p>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center gap-3">
+                    <a class="btn btn-circle btn-ghost" href="#"><i class="fa-brands fa-twitter"></i></a>
+                    <a class="btn btn-circle btn-ghost" href="#"><i class="fa-brands fa-linkedin"></i></a>
+                    <a class="btn btn-circle btn-ghost" href="#"><i class="fa-brands fa-github"></i></a>
+                </div>
+            </div>
+            <div class="flex justify-between">
+                <div>
+                    <span class="footer-title">Produto</span>
+                    <a class="link link-hover" href="#" data-page="dashboard">Painel</a>
+                    <a class="link link-hover" href="#" data-page="segmentation">Segmentação</a>
+                    <a class="link link-hover" href="#" data-page="reports">Relatórios</a>
+                </div>
+                <div>
+                    <span class="footer-title">Empresa</span>
+                    <a class="link link-hover" href="#">Sobre</a>
+                    <a class="link link-hover" href="#">Privacidade</a>
+                    <a class="link link-hover" href="#">Contato</a>
+                </div>
+            </div>
+            <div>
+                <span class="footer-title">Assine</span>
+                <p class="text-sm text-muted">Totalmente gratuito. Sem planos, sem barreiras.</p>
+                <div class="mt-3">
+                    <input id="newsletter" type="email" placeholder="Seu e-mail" class="input input-bordered w-full max-w-xs"/>
+                    <button id="subscribe" class="btn btn-secondary btn-sm mt-2">Assinar novidades</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full border-t border-neutral mt-6 pt-6 text-center text-sm text-muted">
+            © <span id="year"></span> CustomerFlow Analytics — Gratuito. Todos os direitos reservados.
+        </div>
+    </footer>
+
+    <!-- Firebase & App Logic -->
+    <script type="module">
+      // Firebase initialization (module)
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
+      import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyC8TFitMZgSTmxTTIaeCznwN2CpzWoQ6Bc",
+        authDomain: "booksdev-3de79.firebaseapp.com",
+        databaseURL: "https://booksdev-3de79-default-rtdb.firebaseio.com",
+        projectId: "booksdev-3de79",
+        storageBucket: "booksdev-3de79.firebasestorage.app",
+        messagingSenderId: "39273829148",
+        appId: "1:39273829148:web:cbb6d02d4597025e09a0d9",
+        measurementId: "G-5Q3BCRZEBZ"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
+
+      // Parse (Back4App) initialization
+      Parse.initialize("DQx55D6NLqoQbE97pTBoezGGJ0HhbZrGHTLpkFkm", "T9iKtMeo6fhA23FVA1eklT0XkD95FBsA40btwv6T");
+      Parse.serverURL = 'https://parseapi.back4app.com/';
+
+      // App state
+      let currentUser = null;
+      let isAuthenticated = false;
+
+      // Helpers
+      document.getElementById('year').innerText = new Date().getFullYear();
+
+      function showToast(msg, type = 'info') {
+        // simple transient toast using alert styling
+        const el = document.createElement('div');
+        el.className = `fixed right-4 bottom-4 z-50 p-4 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-600 text-white' : type === 'error' ? 'bg-red-600 text-white' : 'bg-black text-white'}`;
+        el.innerText = msg;
+        document.body.appendChild(el);
+        setTimeout(()=> el.remove(), 3500);
+      }
+
+      // Theme toggle
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = document.getElementById('theme-icon');
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('cf_theme', theme);
+        themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      }
+      themeToggle.addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+      });
+      const savedTheme = localStorage.getItem('cf_theme') || 'light';
+      applyTheme(savedTheme);
+
+      // Mobile menu toggle
+      document.getElementById('menu-toggle').addEventListener('click', () => {
+        const mm = document.getElementById('mobile-menu');
+        mm.classList.toggle('hidden');
+      });
+
+      // Navigation SPA
+      const pageLinks = document.querySelectorAll('[data-page]');
+      pageLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const page = link.getAttribute('data-page');
+          loadPage(page);
+          // close mobile
+          document.getElementById('mobile-menu').classList.add('hidden');
+        });
+      });
+
+      // Main content loader
+      const appContent = document.getElementById('app-content');
+
+      function lockedCard() {
+        return `
+        <div class="card glass card-compact p-6 shadow-xl">
+          <div class="card-body items-center text-center">
+            <i class="fa-solid fa-lock fa-2xl text-primary"></i>
+            <h2 class="card-title">Área Protegida</h2>
+            <p>Você precisa estar logado(a) para acessar essa funcionalidade.</p>
+            <div class="card-actions">
+              <button id="cta-login-locked" class="btn btn-primary">Entrar com Google</button>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      function heroSection() {
+        return `
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <div class="space-y-6">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-accent to-primary text-white text-sm w-max">
+              <i class="fa-solid fa-bolt"></i> 100% Gratuito
+            </div>
+            <h2 class="text-4xl md:text-6xl font-bold leading-tight">
+              CustomerFlow Analytics: painel de gestão de clientes <span class="text-secondary">gratuito</span>
+            </h2>
+            <p class="text-lg text-muted max-w-xl">Monitore KPIs, segmente clientes, analise comportamento e previna churn — tudo sem custos. Rápido, seguro e fácil de usar.</p>
+            <div class="flex items-center gap-3">
+              <button id="cta-get-started" class="btn btn-primary btn-lg"><i class="fa-solid fa-rocket mr-2"></i> Começar Grátis</button>
+              <button id="cta-tour" class="btn btn-ghost"><i class="fa-solid fa-play mr-2"></i>Ver Tour</button>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mt-4">
+              <div class="badge badge-lg badge-primary">Ativos: <span id="stat-customers">—</span></div>
+              <div class="badge badge-lg badge-secondary">Retenção: <span id="stat-retention">—</span></div>
+              <div class="badge badge-lg badge-accent">NPS: <span id="stat-nps">—</span></div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center">
+            <div class="w-full max-w-md bg-gradient-to-br from-base-100 to-base-200 p-6 rounded-xl shadow-2xl hero-illustration">
+              <div class="mockup-window border bg-gradient-to-r from-accent to-primary p-4 rounded-lg text-white">
+                <div class="flex justify-between items-center mb-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded bg-white/10 flex items-center justify-center"><i class="fa-solid fa-chart-line"></i></div>
+                    <div>
+                      <div class="font-bold">Painel</div>
+                      <div class="text-xs opacity-80">Visão em tempo real</div>
+                    </div>
+                  </div>
+                  <div class="text-xs opacity-80">Atualizado</div>
+                </div>
+                <div class="h-44 bg-white/10 rounded p-3">
+                  <svg viewBox="0 0 100 40" class="w-full h-full">
+                    <polyline fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" points="0,30 10,20 20,25 30,10 40,18 50,8 60,12 70,6 80,12 90,4 100,10"></polyline>
+                  </svg>
+                </div>
+                <div class="mt-4 flex items-center justify-between text-xs">
+                  <div class="opacity-80">Clientes</div>
+                  <div class="opacity-80">Crescimento</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>`;
+      }
+
+      function featuresSection() {
+        return `
+        <section>
+          <h3 class="text-2xl font-bold mb-4">Funcionalidades Principais</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="card card-compact glass p-5 card-anim">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white">
+                  <i class="fa-solid fa-tachometer-alt"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold">Visão Geral em Tempo Real</h4>
+                  <p class="text-sm text-muted">KPIs dinâmicos com gráficos e alertas instantâneos.</p>
+                </div>
+              </div>
+            </div>
+            <div class="card card-compact glass p-5 card-anim">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-secondary to-accent flex items-center justify-center text-white">
+                  <i class="fa-solid fa-object-group"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold">Segmentação Avançada</h4>
+                  <p class="text-sm text-muted">Filtre por localização, comportamento e valor.</p>
+                </div>
+              </div>
+            </div>
+            <div class="card card-compact glass p-5 card-anim">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-accent to-primary flex items-center justify-center text-white">
+                  <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold">Análise de Comportamento</h4>
+                  <p class="text-sm text-muted">Produtos populares, horários de pico e canais de aquisição.</p>
+                </div>
+              </div>
+            </div>
+            <div class="card card-compact glass p-5 card-anim">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white">
+                  <i class="fa-solid fa-smile"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold">Monitoramento de Satisfação</h4>
+                  <p class="text-sm text-muted">NPS integrado e análise de sentimento automatizada.</p>
+                </div>
+              </div>
+            </div>
+            <div class="card card-compact glass p-5 card-anim">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-secondary to-accent flex items-center justify-center text-white">
+                  <i class="fa-solid fa-bell"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold">Previsões & Alertas</h4>
+                  <p class="text-sm text-muted">Identifique riscos de churn e receba notificações.</p>
+                </div>
+              </div>
+            </div>
+            <div class="card card-compact glass p-5 card-anim">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-accent to-primary flex items-center justify-center text-white">
+                  <i class="fa-solid fa-user-friends"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold">Colaboração em Equipe</h4>
+                  <p class="text-sm text-muted">Notas, tarefas e controles de acesso para times.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>`;
+      }
+
+      function pricingSection() {
+        return `
+        <section>
+          <h3 class="text-2xl font-bold mb-4">Plano</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card p-6 glass">
+              <div class="text-sm text-muted">Comunitário</div>
+              <h4 class="text-2xl font-bold mt-2">Gratuito</h4>
+              <p class="mt-3 text-sm text-muted">Acesso completo às funcionalidades essenciais — sem custos, sem paywall.</p>
+              <ul class="mt-4 space-y-2 text-sm">
+                <li><i class="fa-solid fa-check text-success mr-2"></i>KPIs em tempo real</li>
+                <li><i class="fa-solid fa-check text-success mr-2"></i>Segmentação básica</li>
+                <li><i class="fa-solid fa-check text-success mr-2"></i>Exportação de relatórios</li>
+              </ul>
+              <div class="mt-4">
+                <button class="btn btn-outline btn-primary w-full" id="btn-free-plan">Usar Gratuitamente</button>
+              </div>
+            </div>
+            <div class="card p-6 glass border-2 border-primary transform scale-105">
+              <div class="badge badge-secondary">Recomendado</div>
+              <div class="text-sm text-muted mt-2">Empresas</div>
+              <h4 class="text-2xl font-bold mt-2">Free Forever</h4>
+              <p class="mt-3 text-sm text-muted">Recursos pensados para negócios de qualquer tamanho, com prioridade em privacidade.</p>
+              <ul class="mt-4 space-y-2 text-sm">
+                <li><i class="fa-solid fa-check text-success mr-2"></i>Segmentação avançada</li>
+                <li><i class="fa-solid fa-check text-success mr-2"></i>Relatórios exportáveis</li>
+                <li><i class="fa-solid fa-check text-success mr-2"></i>Suporte comunidade</li>
+              </ul>
+              <div class="mt-4">
+                <button class="btn btn-primary w-full" id="btn-use-now">Começar Grátis</button>
+              </div>
+            </div>
+            <div class="card p-6 glass">
+              <div class="text-sm text-muted">Extras</div>
+              <h4 class="text-2xl font-bold mt-2">Add-ons</h4>
+              <p class="mt-3 text-sm text-muted">Possibilidade de recursos premium opcionais — a plataforma em si permanece gratuita.</p>
+              <ul class="mt-4 space-y-2 text-sm">
+                <li><i class="fa-solid fa-check text-success mr-2"></i>API & integrações</li>
+                <li><i class="fa-solid fa-check text-success mr-2"></i>Exportação avançada</li>
+              </ul>
+              <div class="mt-4">
+                <button class="btn btn-outline w-full">Saber Mais</button>
+              </div>
+            </div>
+          </div>
+        </section>`;
+      }
+
+      function helpSection() {
+        return `
+        <section>
+          <h3 class="text-2xl font-bold mb-4">Ajuda & Documentação</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card p-5 glass">
+              <h4 class="font-bold">Guia Rápido</h4>
+              <p class="text-sm text-muted mt-2">Como começar em minutos: configurar projeto, importar dados e criar seu primeiro relatório.</p>
+              <ul class="mt-3 text-sm space-y-2">
+                <li><i class="fa-solid fa-circle-check text-primary mr-2"></i>Configuração rápida</li>
+                <li><i class="fa-solid fa-circle-check text-primary mr-2"></i>Importar clientes</li>
+                <li><i class="fa-solid fa-circle-check text-primary mr-2"></i>Exportar relatórios</li>
+              </ul>
+            </div>
+            <div class="card p-5 glass">
+              <h4 class="font-bold">Comunidade</h4>
+              <p class="text-sm text-muted mt-2">Participe do fórum, compartilhe templates e veja casos de uso.</p>
+              <a class="btn btn-accent btn-sm mt-4" href="#"><i class="fa-solid fa-users mr-2"></i>Entrar na Comunidade</a>
+            </div>
+          </div>
+        </section>`;
+      }
+
+      // Dashboard content (requires login)
+      function dashboardSection(user) {
+        const name = user ? (user.displayName || user.email) : 'Usuário';
+        return `
+        <section>
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-2xl font-bold">Painel</h3>
+              <p class="text-sm text-muted">Visão geral para ${name}</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-sm text-muted">Atualizado agora</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="card p-4 glass">
+              <div class="text-sm text-muted">Clientes Ativos</div>
+              <div class="text-2xl font-bold" id="kpi-customers">0</div>
+              <div class="text-xs mt-2 text-muted">Comparado com semana anterior</div>
+            </div>
+            <div class="card p-4 glass">
+              <div class="text-sm text-muted">Taxa de Conversão</div>
+              <div class="text-2xl font-bold" id="kpi-conversion">0%</div>
+              <div class="text-xs mt-2 text-muted">Leads → Clientes</div>
+            </div>
+            <div class="card p-4 glass">
+              <div class="text-sm text-muted">Receita Média/Cliente</div>
+              <div class="text-2xl font-bold" id="kpi-arpu">R$0</div>
+              <div class="text-xs mt-2 text-muted">Últimos 30 dias</div>
+            </div>
+            <div class="card p-4 glass">
+              <div class="text-sm text-muted">Retenção</div>
+              <div class="text-2xl font-bold" id="kpi-retention">0%</div>
+              <div class="text-xs mt-2 text-muted">Mês</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            <div class="card p-4 glass lg:col-span-2">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="font-bold">Tendência de Clientes</h4>
+                <div class="text-xs text-muted">Últimos 30 dias</div>
+              </div>
+              <div class="w-full h-64 bg-white/5 rounded p-4">
+                <svg viewBox="0 0 100 40" class="w-full h-full">
+                  <polyline id="trend-poly" fill="none" stroke="rgba(59,130,246,0.9)" stroke-width="2" points="0,30 10,22 20,18 30,14 40,12 50,10 60,8 70,12 80,6 90,4 100,8"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="card p-4 glass">
+              <h4 class="font-bold">Segmentos Principais</h4>
+              <div class="mt-3 space-y-3 text-sm">
+                <div class="flex items-center justify-between"><div>Novos (30d)</div><div class="font-bold">1,234</div></div>
+                <div class="flex items-center justify-between"><div>Recorrentes</div><div class="font-bold">2,345</div></div>
+                <div class="flex items-center justify-between"><div>Inativos</div><div class="font-bold">452</div></div>
+              </div>
+            </div>
+          </div>
+        </section>`;
+      }
+
+      // Segmentation page (requires login)
+      function segmentationSection() {
+        return `
+        <section>
+          <h3 class="text-2xl font-bold mb-4">Segmentação Avançada</h3>
+          <div class="card p-4 glass">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="label"><span class="label-text">Localização</span></label>
+                <select id="seg-location" class="select select-bordered w-full">
+                  <option>Todos</option>
+                  <option>Brasil</option>
+                  <option>Estados Unidos</option>
+                </select>
+              </div>
+              <div>
+                <label class="label"><span class="label-text">Frequência</span></label>
+                <select id="seg-frequency" class="select select-bordered w-full">
+                  <option>Qualquer</option>
+                  <option>Recorrente</option>
+                  <option>1x</option>
+                </select>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center gap-3">
+              <button id="seg-run" class="btn btn-primary">Aplicar Filtro</button>
+              <button id="seg-export" class="btn btn-outline">Exportar CSV</button>
+            </div>
+            <div id="seg-results" class="mt-6 text-sm text-muted">Nenhum segmento aplicado.</div>
+          </div>
+        </section>`;
+      }
+
+      // Reports page (requires login)
+      function reportsSection() {
+        return `
+        <section>
+          <h3 class="text-2xl font-bold mb-4">Relatórios Personalizados</h3>
+          <div class="card p-4 glass">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-muted">Criar relatório</div>
+                <div class="text-lg font-bold">Relatório de Retenção</div>
+              </div>
+              <div>
+                <button id="report-create" class="btn btn-secondary">Criar & Exportar</button>
+              </div>
+            </div>
+            <div class="mt-4 text-sm text-muted">Relatórios exportáveis em PDF ou CSV. Salve templates para uso futuro.</div>
+          </div>
+        </section>`;
+      }
+
+      // Settings page (requires login)
+      function settingsSection() {
+        return `
+        <section>
+          <h3 class="text-2xl font-bold mb-4">Configurações da Conta</h3>
+          <div class="card p-4 glass">
+            <div class="form-control">
+              <label class="label"><span class="label-text">Nome</span></label>
+              <input id="settings-name" type="text" placeholder="Seu nome" class="input input-bordered w-full"/>
+            </div>
+            <div class="form-control mt-3">
+              <label class="label"><span class="label-text">Notificações por e-mail</span></label>
+              <label class="cursor-pointer flex items-center gap-3">
+                <input id="settings-notify" type="checkbox" class="toggle toggle-primary"/>
+                <span class="text-sm text-muted">Ativar</span>
+              </label>
+            </div>
+            <div class="mt-4">
+              <button id="settings-save" class="btn btn-primary">Salvar</button>
+            </div>
+          </div>
+        </section>`;
+      }
+
+      // Load page orchestration
+      function loadPage(page) {
+        // set active nav styling
+        document.querySelectorAll('[data-page]').forEach(el => el.classList.remove('text-primary', 'font-semibold'));
+        const activeLinks = document.querySelectorAll(`[data-page="${page}"]`);
+        activeLinks.forEach(a => a.classList.add('text-primary', 'font-semibold'));
+
+        // content decision
+        switch(page) {
+          case 'home':
+            appContent.innerHTML = heroSection() + featuresSection() + pricingSection() + helpSection();
+            attachHeroListeners();
+            break;
+          case 'dashboard':
+            if (!isAuthenticated) { appContent.innerHTML = lockedCard(); attachLockedListener(); }
+            else { appContent.innerHTML = dashboardSection(currentUser); populateKPIs(); attachDashboardListeners(); }
+            break;
+          case 'segmentation':
+            if (!isAuthenticated) { appContent.innerHTML = lockedCard(); attachLockedListener(); }
+            else { appContent.innerHTML = segmentationSection(); attachSegListeners(); }
+            break;
+          case 'reports':
+            if (!isAuthenticated) { appContent.innerHTML = lockedCard(); attachLockedListener(); }
+            else { appContent.innerHTML = reportsSection(); attachReportsListeners(); }
+            break;
+          case 'settings':
+            if (!isAuthenticated) { appContent.innerHTML = lockedCard(); attachLockedListener(); }
+            else { appContent.innerHTML = settingsSection(); attachSettingsListeners(); }
+            break;
+          case 'help':
+            appContent.innerHTML = helpSection();
+            break;
+          default:
+            appContent.innerHTML = heroSection() + featuresSection() + pricingSection();
+            attachHeroListeners();
+        }
+        // update some preview stats on hero badges if logged
+        updateHeroBadges();
+      }
+
+      // Attachers
+      function attachHeroListeners() {
+        const cta = document.getElementById('cta-get-started');
+        if (cta) cta.addEventListener('click', () => startSignIn());
+        const cta2 = document.getElementById('cta-tour');
+        if (cta2) cta2.addEventListener('click', () => showToast('Tour interativo iniciado (mock).', 'success'));
+
+        // pricing buttons
+        document.getElementById('btn-free-plan')?.addEventListener('click', () => startSignIn());
+        document.getElementById('btn-use-now')?.addEventListener('click', () => startSignIn());
+      }
+
+      function attachLockedListener() {
+        const btn = document.getElementById('cta-login-locked');
+        if (btn) btn.addEventListener('click', () => startSignIn());
+      }
+
+      function attachDashboardListeners() {
+        // example: populate dynamic trend points randomly or from Parse
+        const poly = document.getElementById('trend-poly');
+        if (poly) {
+          // generate random-ish trend
+          const pts = Array.from({length: 11}, (_,i) => `${i*10},${Math.floor(30 - Math.sin(i/2)*14 + Math.random()*6)}`).join(' ');
+          poly.setAttribute('points', pts);
+        }
+      }
+
+      function attachSegListeners() {
+        document.getElementById('seg-run')?.addEventListener('click', () => {
+          document.getElementById('seg-results').innerText = 'Segmento aplicado: ' + (document.getElementById('seg-location').value || 'Todos');
+          showToast('Segmento aplicado', 'success');
+        });
+        document.getElementById('seg-export')?.addEventListener('click', () => {
+          showToast('Exportação iniciada (mock)', 'info');
+        });
+      }
+
+      function attachReportsListeners() {
+        document.getElementById('report-create')?.addEventListener('click', () => {
+          showToast('Relatório gerado e exportado (mock)', 'success');
+        });
+      }
+
+      function attachSettingsListeners() {
+        document.getElementById('settings-save')?.addEventListener('click', async () => {
+          const name = document.getElementById('settings-name').value;
+          const notify = document.getElementById('settings-notify').checked;
+          // Save to Parse
+          if (!currentUser) { showToast('Usuário não autenticado', 'error'); return; }
+          try {
+            const Query = new Parse.Query('UserProfile');
+            Query.equalTo('email', currentUser.email);
+            const res = await Query.first();
+            if (res) {
+              res.set('name', name);
+              res.set('notify', notify);
+              await res.save();
+            } else {
+              const UserProfile = Parse.Object.extend('UserProfile');
+              const obj = new UserProfile();
+              obj.set('email', currentUser.email);
+              obj.set('name', name);
+              obj.set('notify', notify);
+              await obj.save();
+            }
+            showToast('Configurações salvas', 'success');
+          } catch (err) {
+            console.error(err);
+            showToast('Erro ao salvar', 'error');
+          }
+        });
+      }
+
+      // KPIs population (mock or real if stored)
+      async function populateKPIs() {
+        // try fetch metrics from Parse for this user
+        let metrics = null;
+        try {
+          const q = new Parse.Query('Metrics');
+          q.equalTo('ownerEmail', currentUser.email);
+          metrics = await q.first();
+        } catch (err) {
+          console.warn('Parse metrics fetch failed', err);
+        }
+        // fallback mock
+        const customers = metrics ? metrics.get('customers') : Math.floor(500 + Math.random()*4500);
+        const conversion = metrics ? metrics.get('conversion') : (Math.floor(5 + Math.random()*25));
+        const arpu = metrics ? metrics.get('arpu') : (Math.floor(20 + Math.random()*200));
+        const retention = metrics ? metrics.get('retention') : (Math.floor(40 + Math.random()*40));
+        document.getElementById('kpi-customers').innerText = customers.toLocaleString();
+        document.getElementById('kpi-conversion').innerText = conversion + '%';
+        document.getElementById('kpi-arpu').innerText = `R$ ${arpu}`;
+        document.getElementById('kpi-retention').innerText = retention + '%';
+        // hero badges
+        document.getElementById('stat-customers').innerText = customers.toLocaleString();
+        document.getElementById('stat-retention').innerText = retention + '%';
+        document.getElementById('stat-nps').innerText = Math.floor(20 + Math.random()*60);
+      }
+
+      function updateHeroBadges() {
+        // if elements exist, set sample values (will be overwritten by populateKPIs when entering dashboard)
+        const elC = document.getElementById('stat-customers');
+        if (elC && elC.innerText.trim() === '—') elC.innerText = '—';
+      }
+
+      // Sign-in flow using Firebase & save minimal profile to Parse
+      async function startSignIn() {
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+          // user contains displayName, email, photoURL, uid
+          await upsertParseUserProfile(user);
+          showToast('Autenticado com sucesso', 'success');
+        } catch (err) {
+          console.error(err);
+          showToast('Erro ao autenticar', 'error');
+        }
+      }
+
+      async function upsertParseUserProfile(firebaseUser) {
+        try {
+          const email = firebaseUser.email;
+          const Query = new Parse.Query('UserProfile');
+          Query.equalTo('email', email);
+          const existing = await Query.first();
+          if (existing) {
+            existing.set('name', firebaseUser.displayName || '');
+            existing.set('photo', firebaseUser.photoURL || '');
+            existing.set('firebaseUID', firebaseUser.uid);
+            await existing.save();
+          } else {
+            const UserProfile = Parse.Object.extend('UserProfile');
+            const obj = new UserProfile();
+            obj.set('email', email);
+            obj.set('name', firebaseUser.displayName || '');
+            obj.set('photo', firebaseUser.photoURL || '');
+            obj.set('firebaseUID', firebaseUser.uid);
+            await obj.save();
+          }
+        } catch (e) {
+          console.error('Parse save failed', e);
+        }
+      }
+
+      async function doSignOut() {
+        try {
+          await signOut(auth);
+          showToast('Sessão encerrada', 'info');
+        } catch (err) {
+          console.error(err);
+          showToast('Erro ao sair', 'error');
+        }
+      }
+
+      // Monitor auth state
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          isAuthenticated = true;
+          currentUser = { uid: user.uid, displayName: user.displayName, email: user.email, photoURL: user.photoURL };
+          // update UI
+          renderUserArea();
+          // Prefetch metrics or set defaults
+          loadPage('dashboard');
+        } else {
+          isAuthenticated = false;
+          currentUser = null;
+          renderUserArea();
+          loadPage('home');
+        }
+      });
+
+      function renderUserArea() {
+        const ua = document.getElementById('user-area');
+        ua.innerHTML = '';
+        if (isAuthenticated && currentUser) {
+          const avatar = document.createElement('div');
+          avatar.className = 'flex items-center gap-2';
+          const img = document.createElement('img');
+          img.src = currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.displayName || currentUser.email);
+          img.alt = currentUser.displayName || 'User';
+          img.className = 'w-8 h-8 rounded-full';
+          const name = document.createElement('span');
+          name.className = 'hidden md:inline-block';
+          name.innerText = currentUser.displayName ? currentUser.displayName.split(' ')[0] : currentUser.email.split('@')[0];
+          const menuBtn = document.createElement('div');
+          menuBtn.className = 'dropdown dropdown-end';
+          menuBtn.innerHTML = `
+            <label tabindex="0" class="btn btn-ghost btn-sm ml-2">${name.innerText} <i class="fa-solid fa-caret-down ml-2"></i></label>
+            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+              <li><a data-page="dashboard">Painel</a></li>
+              <li><a data-page="settings">Configurações</a></li>
+              <li><a id="btn-logout" class="text-error">Sair</a></li>
+            </ul>
+          `;
+          avatar.appendChild(img);
+          avatar.appendChild(menuBtn);
+          ua.appendChild(avatar);
+
+          // attach logout
+          setTimeout(()=> {
+            document.getElementById('btn-logout')?.addEventListener('click', doSignOut);
+            // hook nav from dropdown
+            menuBtn.querySelectorAll('[data-page]').forEach(a => {
+              a.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadPage(a.getAttribute('data-page'));
+              });
+            });
+          }, 50);
+        } else {
+          const btn = document.createElement('button');
+          btn.id = 'btn-login';
+          btn.className = 'btn btn-primary btn-sm';
+          btn.innerHTML = '<i class="fa-brands fa-google mr-2"></i>Entrar';
+          btn.addEventListener('click', startSignIn);
+          ua.appendChild(btn);
+        }
+      }
+
+      // newsletter subscribe basic save to Parse
+      document.getElementById('subscribe').addEventListener('click', async () => {
+        const email = document.getElementById('newsletter').value;
+        if (!email) { showToast('Insira um e-mail válido', 'error'); return; }
+        try {
+          const Sub = Parse.Object.extend('Newsletter');
+          const s = new Sub();
+          s.set('email', email);
+          await s.save();
+          showToast('Inscrito com sucesso', 'success');
+          document.getElementById('newsletter').value = '';
+        } catch (err) {
+          console.error(err);
+          showToast('Erro ao inscrever', 'error');
+        }
+      });
+
+      // Banner CTAs landing -> sign in
+      document.getElementById('btn-use-now')?.addEventListener('click', startSignIn);
+
+      // initial load
+      renderUserArea();
+      loadPage('home');
+
+      // Delegated listeners for dynamic elements
+      document.body.addEventListener('click', (e) => {
+        const el = e.target.closest && e.target.closest('[data-page]');
+        if (el) {
+          e.preventDefault();
+          loadPage(el.getAttribute('data-page'));
+        }
+      });
+
+    </script>
+</body>
+</html>
